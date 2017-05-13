@@ -2,7 +2,7 @@
     warning off;
     %All parameters in initx are in standard units.
     % Conversion factors to FWHM in Hz, delta f0 in Hz, phase in degrees
-%     conv = [1 (2*42.576*3) (42.576*3) (180/pi) 1 1];
+    %conv = [1 (2*42.576*3) (42.576*3) (180/pi) 1 1];
     conv = [1 (2*MRS_struct.p.LarmorFreq) MRS_struct.p.LarmorFreq (180/pi) 1 1]; % MM (170131)
     initx=initx./conv;
     
@@ -62,7 +62,7 @@
     FitParams(:,2) = abs(FitParams(:,2));
     
     % Conversion factors to FWHM in Hz, delta f0 in Hz, phase in degrees
-%     conv = repmat([1 (2*42.576*3) (42.576*3) (180/pi) 1 1], [nframes 1]);
+    %conv = repmat([1 (2*42.576*3) (42.576*3) (180/pi) 1 1], [nframes 1]);
     conv = repmat([1 (2*MRS_struct.p.LarmorFreq) MRS_struct.p.LarmorFreq (180/pi) 1 1], [nframes 1]); % MM (170125)
     
     FitParams = FitParams .* conv;

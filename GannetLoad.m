@@ -42,10 +42,8 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   1. Pre-initialise
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-MRS_struct.versionload = 'MM-170226';
+MRS_struct.versionload = '170226';
 MRS_struct.ii = 0;
-MRS_struct.site = 'University of Calgary'; % MM (170424)
-MRS_struct.siteID = 'Calgary'; % MM (170424)
 MRS_struct.gabafile = gabafile;
 
 MRS_struct = GannetPreInitialise(MRS_struct); % MM (170322)
@@ -432,11 +430,7 @@ for ii=1:numpfiles    %Loop over all files in the batch (from gabafile)
     %Bottom Right
     subplot(2,2,4);
     axis off;
-    
-    % MM (170130)
-    tmp = ['Site     : '  MRS_struct.site ];
-    text(0,1, tmp, 'FontName', 'Helvetica','FontSize',13);
-    
+        
     if strcmp(MRS_struct.p.vendor,'Siemens')
         tmp = [ 'Filename    : ' MRS_struct.gabafile{ii*2-1} ];
     else
@@ -546,9 +540,9 @@ for ii=1:numpfiles    %Loop over all files in the batch (from gabafile)
     set(gcf,'PaperPosition',[0 0 11 8.5]);
     % MM (170201)
     if(strcmpi(MRS_struct.p.vendor,'Philips_data'))
-        pdfname=[ 'MRSload_output/' MRS_struct.siteID '_' fullpath '_load.pdf' ];
+        pdfname=[ 'MRSload_output/' fullpath '_load.pdf' ];
     else
-        pdfname=[ 'MRSload_output/' MRS_struct.siteID '_' pfil_nopath  '_load.pdf' ];
+        pdfname=[ 'MRSload_output/' pfil_nopath  '_load.pdf' ];
     end
     saveas(h, pdfname);
     
@@ -589,12 +583,11 @@ for ii=1:numpfiles    %Loop over all files in the batch (from gabafile)
     end
     
     % 140116: ADH reorder structure    
-    % MM (170322)
     if(isfield(MRS_struct, 'waterfile') == 1)
-        structorder = {'versionload', 'ii', 'site', 'siteID', 'gabafile', ...
+        structorder = {'versionload', 'ii', 'gabafile', ...
             'waterfile', 'p', 'fids', 'spec', 'out'};
     else
-        structorder = {'versionload', 'ii', 'site', 'siteID', 'gabafile', ...
+        structorder = {'versionload', 'ii', 'gabafile', ...
             'p', 'fids', 'spec', 'out'};
     end
     

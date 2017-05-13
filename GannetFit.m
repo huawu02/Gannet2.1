@@ -24,7 +24,7 @@ if nargin > 1
     end
 end
 
-FIT_LSQCURV = 0;
+%FIT_LSQCURV = 0;
 FIT_NLINFIT = 1;
 fit_method = FIT_NLINFIT; %FIT_NLINFIT;
 waterfit_method = FIT_NLINFIT;
@@ -35,7 +35,6 @@ if strcmp(MRS_struct.p.Reference_compound,'H2O')
 end
 MRS_struct.versionfit = 'MM-170502';
 % disp(['GABA Fit Version is ' MRS_struct.versionfit ]);
-fitwater=1;
 numscans=size(GABAData);
 numscans=numscans(1);
 
@@ -398,17 +397,9 @@ for ii=1:numscans
     %   1A. Start up the output figure
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     fignum = 102;
-    % MM (161221)
-    %         if ~ishandle(fignum)
-    %             noFig = true;
-    %         else
-    %             noFig = false;
-    %         end
     h=figure(fignum);
     clf(h); % MM (161221)
-    %         if noFig
     set(h, 'Position', [100, 100, 1000, 707]);
-    %         end
     set(h,'Color',[1 1 1]);
     figTitle = ['GannetFit Output'];
     set(gcf,'Name',figTitle,'Tag',figTitle, 'NumberTitle','off');
@@ -508,7 +499,6 @@ for ii=1:numscans
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     
     if strcmp(MRS_struct.p.Reference_compound,'H2O')
-        %             T1=20;
         %estimate height and baseline from data
         [maxinWater, watermaxindex]=max(real(WaterData(ii,:)),[],2);
         waterbase = mean(real(WaterData(1:500))); % avg
@@ -855,8 +845,8 @@ for ii=1:numscans
         set(gca,'YTick',[],'Box','off');
         xlim([1.75 3.6]); % xlim([2.6 3.6]);  % MM (170202)
         set(gca,'YColor','white');
-        %             hcr=text(2.94,Crmax*0.75,'Creatine'); % MM (170202)
-        %             set(hcr,'horizontalAlignment', 'left')
+        %hcr=text(2.94,Crmax*0.75,'Creatine'); % MM (170202)
+        %set(hcr,'horizontalAlignment', 'left')
         %Transfer Cr plot into insert
         subplot(2,2,3)
         [h_m h_i]=inset(hb,h2);
@@ -876,7 +866,7 @@ for ii=1:numscans
         hb=subplot(2, 2, 3);
         %debugging changes
         %plot(freqrange,real(LorentzModel(CrFitParams(ii,:),freqrange)), 'r', ...
-        %    MRS_struct.spec.freq,real(Cr_OFF(:)),'b', ...
+        %MRS_struct.spec.freq,real(Cr_OFF(:)),'b', ...
         %    freqrange, residCr, 'k');
         plot(freqrangecc,real(TwoLorentzModel(MRS_struct.out.ChoCrMeanSpecFit(ii,:),freqrangecc)), 'r', ...
             freqrangecc,real(TwoLorentzModel([MRS_struct.out.ChoCrMeanSpecFit(ii,1:(end-1)) 0],freqrangecc)), 'r', ...
@@ -935,11 +925,7 @@ for ii=1:numscans
     end
     
     axis off
-    
-    % MM (170130)
-    tmp = ['Site        : '  MRS_struct.site ];
-    text(0,1, tmp, 'FontName', 'Helvetica');
-    
+        
     if strcmp(MRS_struct.p.vendor,'Siemens')
         tmp = [ 'Filename    : ' MRS_struct.gabafile{ii*2-1} ];
     else
@@ -957,11 +943,11 @@ for ii=1:numscans
     %tmp = sprintf('GABA+ FWHM   : %.2f Hz', MRS_struct.out.GABAFWHM(ii) );
     %text(0,0.7, tmp);
     % MM (170201)
-    %         if isfield(MRS_struct.p,'voxsize')
-    %             SNRfactor=round(sqrt(MRS_struct.p.Navg(ii))*MRS_struct.p.voxsize(ii,1)*MRS_struct.p.voxsize(ii,2)*MRS_struct.p.voxsize(ii,3)*.001);
-    %             tmp = ['SNR factor         :  '  num2str(SNRfactor)];
-    %             text(0,0.7, tmp, 'FontName', 'Helvetica');
-    %         end
+    %if isfield(MRS_struct.p,'voxsize')
+    %    SNRfactor=round(sqrt(MRS_struct.p.Navg(ii))*MRS_struct.p.voxsize(ii,1)*MRS_struct.p.voxsize(ii,2)*MRS_struct.p.voxsize(ii,3)*.001);
+    %    tmp = ['SNR factor         :  '  num2str(SNRfactor)];
+    %    text(0,0.7, tmp, 'FontName', 'Helvetica');
+    %end
     
     if strcmp (MRS_struct.p.target, 'Glx')
         tmp = sprintf('Glx Area : %.3g', MRS_struct.out.GABAArea(ii));
@@ -1103,13 +1089,12 @@ for ii=1:numscans
     set(gcf,'PaperPosition',[0 0 11 8.5]);
     % MM (170201)
     if(strcmpi(MRS_struct.p.vendor,'Philips_data'))
-        pdfname=[ epsdirname '/' MRS_struct.siteID '_' fullpath '_fit.pdf' ];
+        pdfname=[ epsdirname '/' fullpath '_fit.pdf' ];
     else
-        pdfname=[ epsdirname '/' MRS_struct.siteID '_' pfil_nopath  '_fit.pdf' ];
+        pdfname=[ epsdirname '/' pfil_nopath  '_fit.pdf' ];
     end
     %epsdirname
     if(exist(epsdirname,'dir') ~= 7)
-        %         epsdirname
         mkdir(epsdirname)
     end
     saveas(gcf, pdfname);
@@ -1127,18 +1112,18 @@ for ii=1:numscans
     %140116: ADH reorder structure
     if(isfield(MRS_struct, 'mask') == 1)
         if(isfield(MRS_struct, 'waterfile') == 1)
-            structorder = {'versionload', 'versionfit', 'ii', 'site', 'siteID', ...
+            structorder = {'versionload', 'versionfit', 'ii', ...
                 'gabafile', 'waterfile', 'p', 'fids', 'spec', 'out', 'mask'};
         else
-            structorder = {'versionload', 'versionfit','ii', 'site', 'siteID', ...
+            structorder = {'versionload', 'versionfit','ii', ...
                 'gabafile', 'p', 'fids', 'spec', 'out', 'mask'};
         end
     else
         if(isfield(MRS_struct, 'waterfile') == 1)
-            structorder = {'versionload', 'versionfit', 'ii', 'site', 'siteID', ...
+            structorder = {'versionload', 'versionfit', 'ii', ...
                 'gabafile', 'waterfile', 'p', 'fids', 'spec', 'out'};
         else
-            structorder = {'versionload', 'versionfit','ii', 'site', 'siteID', ...
+            structorder = {'versionload', 'versionfit','ii', ...
                 'gabafile', 'p', 'fids', 'spec', 'out'};
         end
     end
@@ -1346,8 +1331,6 @@ TE=MRS_struct.p.TE(ii)/1000;
 N_H_GABA=2;
 N_H_Glx=1;
 N_H_Water=2;
-% Nspectra = length(MRS_struct.gabafile);
-%Nwateravg=8;
 
 switch MRS_struct.p.target
     case 'GABA'

@@ -168,12 +168,12 @@ switch MRS_struct.p.Siemens_type
     case 7
         %size(twix_obj.image())
         [twix_obj.image.NCol twix_obj.image.NCha twix_obj.image.NEco twix_obj.image.NSet];
-%         FullData=permute(reshape(double(twix_obj.image()),[twix_obj.image.NCol twix_obj.image.NCha twix_obj.image.NEco twix_obj.image.NSet]),[2 1 3 4]);
+        %FullData=permute(reshape(double(twix_obj.image()),[twix_obj.image.NCol twix_obj.image.NCha twix_obj.image.NEco twix_obj.image.NSet]),[2 1 3 4]);
         FullData=permute(reshape(double(twix_obj.image()),[twix_obj.image.NCol twix_obj.image.NCha twix_obj.image.NAve twix_obj.image.NSet]),[2 1 4 3]);
         %Undo Plus-minus
         %FullData(:,:,2,:)=-FullData(:,:,2,:);
         %size(FullData)
-%         FullData=reshape(FullData,[twix_obj.image.NCha twix_obj.image.NCol twix_obj.image.NEco*twix_obj.image.NSet]);
+        %FullData=reshape(FullData,[twix_obj.image.NCha twix_obj.image.NCol twix_obj.image.NEco*twix_obj.image.NSet]);
         FullData=reshape(FullData,[twix_obj.image.NCha twix_obj.image.NCol twix_obj.image.NAve*twix_obj.image.NSet]);
 end
 
@@ -181,18 +181,13 @@ MRS_struct.p.Navg(ii) = double(twix_obj.image.NAcq);
 %Trim off points at the start! RE 4/16/15 (Uncertain whether this should be done for all acquisitions or just some)
 FullData=FullData(:,pointsBeforeEcho+1:end,:);
 MRS_struct.p.npoints = MRS_struct.p.npoints - pointsBeforeEcho; % MM (160914)
-if isequal(MRS_struct.p.npoints, twix_obj.hdr.MeasYaps.sSpecPara.lVectorSize) % MM (170127)
-    MRS_struct.p.Siemens.oversampled = 0;
-else
-    MRS_struct.p.Siemens.oversampled = 1;
-end
 %size(FullData)
 %Left-shift data by number_to_shift
 %save FullData
 %FullData=FullData(:,1:MRS_struct.p.npoints,:);
 %size(FullData)
 
-%Combine data based upon first point of FIDs (mean over all averages)
+% If no water data given, combine data based upon first point of water-suppressed data (average all transients)
 if isequal(nargin,2) % MM (170124)
     firstpoint = mean(conj(FullData(:,1,:)),3);
     channels_scale = squeeze(sqrt(sum(firstpoint.*conj(firstpoint))));
@@ -222,7 +217,7 @@ if(nargin==3)
     else
         MRS_struct.p.Siemens.deltaFreq.water(ii) = 0;
     end
-    MRS_struct.p.Siemens = reorderstructure(MRS_struct.p.Siemens, 'editRF', 'deltaFreq', 'oversampled', 'ScannerModel', 'SoftwareVersion', 'SequenceVersion');
+    MRS_struct.p.Siemens = reorderstructure(MRS_struct.p.Siemens, 'editRF', 'deltaFreq', 'ScannerModel', 'SoftwareVersion', 'SequenceVersion');
     
     if twix_obj.image.NEco>twix_obj.image.NIda
         WaterData=permute(reshape(double(twix_obj_water.image()),[twix_obj_water.image.NCol twix_obj_water.image.NCha twix_obj_water.image.NEco twix_obj_water.image.NSet]),[2 1 3 4]);
@@ -264,10 +259,10 @@ if(nargin==3)
                 WaterData(:,:,2,:)=-WaterData(:,:,2,:);
                 WaterData=reshape(WaterData,[twix_obj_water.image.NCha twix_obj_water.image.NCol twix_obj_water.image.NAve*twix_obj_water.image.NSet]);
             case 7
-%                 WaterData=permute(reshape(double(twix_obj_water.image()),[twix_obj_water.image.NCol twix_obj_water.image.NCha twix_obj_water.image.NEco twix_obj_water.image.NSet]),[2 1 3 4]);
-%                 %Undo Plus-minus
-%                 WaterData(:,:,2,:)=-WaterData(:,:,2,:);
-%                 WaterData=reshape(WaterData,[twix_obj_water.image.NCha twix_obj_water.image.NCol twix_obj_water.image.NEco*twix_obj_water.image.NSet]);
+                %WaterData=permute(reshape(double(twix_obj_water.image()),[twix_obj_water.image.NCol twix_obj_water.image.NCha twix_obj_water.image.NEco twix_obj_water.image.NSet]),[2 1 3 4]);
+                %Undo Plus-minus
+                %WaterData(:,:,2,:)=-WaterData(:,:,2,:);
+                %WaterData=reshape(WaterData,[twix_obj_water.image.NCha twix_obj_water.image.NCol twix_obj_water.image.NEco*twix_obj_water.image.NSet]);
                 % Copy it into WaterData
                 WaterData=permute(reshape(double(twix_obj_water.image()),[twix_obj_water.image.NCol twix_obj_water.image.NCha twix_obj_water.image.NAve twix_obj_water.image.NSet]),[2 1 4 3]);
                 %Undo Plus-minus
@@ -318,10 +313,6 @@ if(nargin==3)
     FullData = FullData .* firstpoint * MRS_struct.p.global_rescale;
     % sum over Rx channels
     FullData = conj(squeeze(sum(FullData,1)));
-    % Some site's data 90 deg out of phase
-    if any(strcmpi(MRS_struct.siteID, {'Berkeley','CHOP','HHU'}))
-        FullData = FullData * exp(1i*90*pi/180);
-    end
     MRS_struct.fids.data = FullData;
 end
 

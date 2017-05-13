@@ -14,24 +14,24 @@ if(nargin==3)
     end
 end
 
-% Use only first half of transients
+% Use first half of time-domain data
 tLim = size(MRS_struct.fids.data,1)/2; % MM (170227)
 
 while(SpecRegLoop>(-1))
     
     if(OnWhat) %Read water data
         %First, take the complex data and turn it into a real matrix
-        flatdata(:,1,:)=real(MRS_struct.fids.data_water);
-        flatdata(:,2,:)=imag(MRS_struct.fids.data_water);        
+        flatdata(:,1,:)=real(MRS_struct.fids.data_water(1:tLim,:));
+        flatdata(:,2,:)=imag(MRS_struct.fids.data_water(1:tLim,:));        
     else % read spectro data        
         if(nargin==3)
             if(Dual==1)
                 %This code runs twice, first for ONs, second for OFFs.
                 %SpecRegLoop;
-                size(real(MRS_struct.fids.data(:,(MRS_struct.fids.ON_OFF==SpecRegLoop))));
+                %size(real(MRS_struct.fids.data(:,(MRS_struct.fids.ON_OFF==SpecRegLoop))));
                 
-                flatdata(:,1,:)=real(MRS_struct.fids.data(:,(MRS_struct.fids.ON_OFF==SpecRegLoop)));
-                flatdata(:,2,:)=imag(MRS_struct.fids.data(:,(MRS_struct.fids.ON_OFF==SpecRegLoop)));
+                flatdata(:,1,:)=real(MRS_struct.fids.data(1:tLim,(MRS_struct.fids.ON_OFF==SpecRegLoop)));
+                flatdata(:,2,:)=imag(MRS_struct.fids.data(1:tLim,(MRS_struct.fids.ON_OFF==SpecRegLoop)));
             end
         else
             %First, take the complex data and turn it into a real matrix
@@ -54,14 +54,15 @@ while(SpecRegLoop>(-1))
     target=MRS_struct.fids.flattarget(:); % MM (170213)
     reverseStr = ''; % MM (170227)
     for corrloop=1:size(flatdata,3)
-        transient=squeeze(flatdata(:,:,corrloop));
-        input.data=transient(:);
-        parsFit(corrloop,:)=nlinfit(input,target,@FreqPhaseShiftNest,parsGuess,nlinopts);
-        parsGuess = parsFit(corrloop,:); %Carry parameters from point to point
         % MM (170227)
         msg = sprintf('\nSpectral Registration - Fitting transient: %d', corrloop);
         fprintf([reverseStr, msg]);
         reverseStr = repmat(sprintf('\b'), 1, length(msg));
+        
+        transient=squeeze(flatdata(:,:,corrloop));
+        input.data=transient(:);
+        parsFit(corrloop,:)=nlinfit(input,target,@FreqPhaseShiftNest,parsGuess,nlinopts);
+        parsGuess = parsFit(corrloop,:); %Carry parameters from point to point        
     end
     if(OnWhat)
         %Applyng frequency and phase corrections.
@@ -181,7 +182,7 @@ while(SpecRegLoop>(-1))
             freqrange=MRS_struct.spec.freq(clb:cub);
             Cr_initx = [ Area_estimate Width_estimate 3.02 0 Baseline_offset 0 ].*[1 (2*MRS_struct.p.LarmorFreq) (MRS_struct.p.LarmorFreq) (180/pi) 1 1 ];
             CrMeanSpec = mean(AllFramesFTrealign(clb:cub,:),2);
-%             CrMeanSpecFit = FitCr(freqrange, CrMeanSpec, Cr_initx);
+            %CrMeanSpecFit = FitCr(freqrange, CrMeanSpec, Cr_initx);
             CrMeanSpecFit = FitCr(freqrange, CrMeanSpec, Cr_initx, MRS_struct); % MM (170125)
             
             %Some Output

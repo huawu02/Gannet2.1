@@ -338,7 +338,7 @@ for ii=1:numscans
             %plot(freq(freqbounds),GABAGlxModel_area(GaussModelInit,freq(freqbounds)),freq(freqbounds),real(GABAData(ii,freqbounds)))
             for fit_iter = 1:100
                 try % MM (170228)
-                    [GaussModelParam(ii,:), residg, ~, ~, MSE] = nlinfit(freq(freqbounds), real(GABAData(ii,freqbounds)), ... % J, COBV, MSE edited in
+                    [GaussModelParam(ii,:), residg, ~, ~, MSE] = nlinfit(freq(freqbounds), real(GABAData(ii,freqbounds)), ...
                         @(xdummy,ydummy) GABAGlxModel_area(xdummy,ydummy), ...
                         GaussModelInit, ...
                         nlinopts);
@@ -1314,10 +1314,10 @@ EditingEfficiency_Glx = 0.4;
 T1_GABA = 0.80; % "empirically determined"...! Gives same values as RE's spreadsheet
 % ... and consistent with Cr-CH2 T1 of 0.8 (Traber, 2004)
 % Not yet putting in measured GABA T1, but it is in the pipeline - 1.35ish
-T1_Glx = 1.23;
+T1_Glx = 1.23; % Posse et al. 2007 (MRM)
 
 T2_GABA = 0.088; % from JMRI paper 2012 Edden et al.
-T2_Glx = 0.18; % Ganji 2012 (NMR Biomed.)
+T2_Glx = 0.18; % Ganji et al. 2012 (NMR Biomed)
 
 T1_Water = 1.100; % average of WM and GM, estimated from Wansapura 1999
 T2_Water = 0.095; % average of WM and GM, estimated from Wansapura 1999

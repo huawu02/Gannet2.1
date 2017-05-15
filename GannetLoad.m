@@ -371,19 +371,9 @@ for ii=1:numpfiles    %Loop over all files in the batch (from gabafile)
     %   6. Build Gannet Output
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
     % MM (161221)
-%     if(ishandle(101))
-%         close(101)
-%     end
-%     if ~ishandle(101)
-%         noFig = true;
-%     else
-%         noFig = false;
-%     end
     h=figure(101);
     clf(h); % MM (161221)
-%     if noFig
-        set(h, 'Position', [100, 100, 1000, 707]);
-%     end
+    set(h, 'Position', [100, 100, 1000, 707]);
     set(h,'Color',[1 1 1]);
     figTitle = ['GannetLoad Output'];
     set(gcf,'Name',figTitle,'Tag',figTitle, 'NumberTitle','off');

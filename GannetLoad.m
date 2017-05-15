@@ -46,7 +46,7 @@ MRS_struct.versionload = '170226';
 MRS_struct.ii = 0;
 MRS_struct.gabafile = gabafile;
 
-MRS_struct = GannetPreInitialise(MRS_struct); % MM (170322)
+MRS_struct = GannetPreInitialise(MRS_struct);
 
 %Check whether water data or not
 if(nargin > 1)

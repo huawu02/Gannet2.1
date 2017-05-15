@@ -1,6 +1,6 @@
 function MRS_struct=GannetPreInitialise(MRS_struct)
 
-% Some of these parameters will be parsed from the data headers
+% Some of these parameters will be parsed from the data file headers
 
 % Acquisition Parameters
     MRS_struct.p.sw = []; % parsed from header
@@ -9,7 +9,7 @@ function MRS_struct=GannetPreInitialise(MRS_struct)
     MRS_struct.p.TE = []; % parsed from header
     MRS_struct.p.LarmorFreq = []; % parsed from header
     MRS_struct.p.Nwateravg = []; % parsed from header
-    MRS_struct.p.target = 'GABAGlx'; % options are 'GABA', 'Glx', 'GABAGlx' and 'GSH'
+    MRS_struct.p.target = 'GABAGlx'; % options are 'GABAGlx' (recommended), 'GABA', 'Glx' and 'GSH'
     MRS_struct.p.ONOFForder = 'offfirst'; % options are 'onfirst' or 'offfirst'
     MRS_struct.p.Water_Positive = 1; % for Philips MOIST ws, set to 0
     % Siemens header information differs between versions; switch for different versions
@@ -18,7 +18,7 @@ function MRS_struct=GannetPreInitialise(MRS_struct)
 % Analysis Parameters
     MRS_struct.p.LB = 3;
     %MRS_struct.p.ZeroFillTo = []; % zero-fill to obtain nominal spectral resolution of 0.061 Hz/point
-    MRS_struct.p.AlignTo = 'SpecReg'; % options are 'SpecReg' (default and recommended), 'Cr', 'Cho', 'NAA', 'H20', 'CrOFF'
+    MRS_struct.p.AlignTo = 'SpecReg'; % options are 'SpecReg' (recommended), 'Cr', 'Cho', 'NAA', 'H20', 'CrOFF'
     
 % Output Parameters
     MRS_struct.p.mat = 0;  % 1 = YES, save MRS_struct as .mat file

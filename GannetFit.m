@@ -736,7 +736,7 @@ for ii=1:numscans
     MRS_struct.out.CrFitError(ii) = 100*stdresidCr/Crheight;
     
     if any(strcmp(MRS_struct.p.target,{'GABA','Glx'}))
-        MRS_struct.out.GABAIU_Error_cr(ii) = (MRS_struct.out.GABAFitError(ii).^2 + MRS_struct.out.WaterFitError(ii).^2).^0.5;
+        MRS_struct.out.GABAIU_Error_cr(ii) = (MRS_struct.out.GABAFitError(ii).^2 + MRS_struct.out.CrFitError(ii).^2).^0.5;
     elseif strcmp(MRS_struct.p.target,'GABAGlx')
         MRS_struct.out.GABAGlxIU_Error_cr(ii) = sqrt(MRS_struct.out.GABAGlxFitError(ii).^2 + MRS_struct.out.CrFitError(ii).^2);
         MRS_struct.out.GABAIU_Error_cr(ii) = sqrt(MRS_struct.out.GABAFitError(ii).^2 + MRS_struct.out.CrFitError(ii).^2);

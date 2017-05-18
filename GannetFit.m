@@ -716,20 +716,20 @@ for ii=1:numscans
     
     %Initialise fitting pars
     z=abs(MRS_struct.spec.freq-3.12);
-    lb=find(min(z)==z);
+    lbCr=find(min(z)==z);
     z=abs(MRS_struct.spec.freq-2.72);
-    ub=find(min(z)==z);
-    Cr_initx = [max(real(Cr_OFF(lb:ub))) 0.05 3.0 0 0 0 ];
-    freqrange = MRS_struct.spec.freq(lb:ub);
+    ubCr=find(min(z)==z);
+    Cr_initx = [max(real(Cr_OFF(lbCr:ubCr))) 0.05 3.0 0 0 0 ];
+    freqrange = MRS_struct.spec.freq(lbCr:ubCr);
     %Then use the same function as the Cr Fit in GannetLoad
     nlinopts=statset('nlinfit');
     nlinopts = statset(nlinopts, 'MaxIter', 1e5, 'Display','Off');
-    [CrFitParams(ii,:), residCr, ~, ~, MSE] = nlinfit(freqrange, real(Cr_OFF(lb:ub)), ...
+    [CrFitParams(ii,:), residCr, ~, ~, MSE] = nlinfit(freqrange, real(Cr_OFF(lbCr:ubCr)), ...
         @(xdummy, ydummy) LorentzModel(xdummy, ydummy),Cr_initx, nlinopts);
     MRS_struct.out.CrModelParam(ii,:) = CrFitParams(ii,:); % MM (160913)
     Crheight = CrFitParams(ii,1)/(2*pi*CrFitParams(ii,2)); % MM (170202)
-    Crmin = min(real(Cr_OFF(lb:ub)));
-    Crmax = max(real(Cr_OFF(lb:ub)));
+    Crmin = min(real(Cr_OFF(lbCr:ubCr)));
+    Crmax = max(real(Cr_OFF(lbCr:ubCr)));
     resmaxCr = max(residCr);
     stdresidCr = std(residCr);
     MRS_struct.out.CrResid(ii,:) = residCr; % MM (160913)
@@ -745,7 +745,7 @@ for ii=1:numscans
     
     % MM (170113)
     %pred = LorentzModel(CrFitParams(ii,:), freqrange);
-    %obsv = real(Cr_OFF(lb:ub));
+    %obsv = real(Cr_OFF(lbCr:ubCr));
     %r = corr(pred(:), obsv(:));
     %MRS_struct.out.CrFitR2(ii) = r^2;
     %z = fisherz(sqrt([MRS_struct.out.GABAFitR2(ii), MRS_struct.out.CrFitR2(ii)]));
@@ -828,25 +828,20 @@ for ii=1:numscans
     
     %alter resid Cr for plotting.
     residCr = residCr + Crmin - resmaxCr;
-    NAAmin = min(real(Cr_OFF(lowerbound:upperbound)));
-    %NAAmax = max(real(Cr_OFF(lowerbound:upperbound)));
-    resmaxNAA = max(residNAA);
-    residNAA = residNAA + NAAmin - resmaxNAA; % MM (170202)
     if strcmp(MRS_struct.p.Reference_compound,'H2O')
         %Plot the Cr fit
         h2=subplot(2, 2, 4);
         %debugging changes
-        plot(freqrangecc, real(TwoLorentzModel(MRS_struct.out.ChoCrMeanSpecFit(ii,:),freqrangecc)), 'r', ...
-            freqrangecc, real(TwoLorentzModel([MRS_struct.out.ChoCrMeanSpecFit(ii,1:(end-1)) 0],freqrangecc)), 'r', ...
-            freqrangeNAA, real(LorentzModel(NAAFitParams(ii,:),freqrangeNAA)), 'r', ... % MM (170202)
-            MRS_struct.spec.freq, real(Cr_OFF(:)), 'b', ...
-            freqrange, residCr, 'k', freqrangeNAA, residNAA, 'k'); % MM (170202)
+        plot(freqrangecc,real(TwoLorentzModel(MRS_struct.out.ChoCrMeanSpecFit(ii,:),freqrangecc)), 'r', ...
+                freqrangecc,real(TwoLorentzModel([MRS_struct.out.ChoCrMeanSpecFit(ii,1:(end-1)) 0],freqrangecc)), 'r', ...
+                MRS_struct.spec.freq,real(Cr_OFF(:)),'b', ...
+                freqrange, residCr, 'k');
         set(gca,'XDir','reverse');
         set(gca,'YTick',[],'Box','off');
-        xlim([1.75 3.6]); % xlim([2.6 3.6]);  % MM (170202)
+        xlim([2.6 3.6]);
         set(gca,'YColor','white');
-        %hcr=text(2.94,Crmax*0.75,'Creatine'); % MM (170202)
-        %set(hcr,'horizontalAlignment', 'left')
+        hcr=text(2.94,Crmax*0.75,'Creatine');
+        set(hcr,'horizontalAlignment', 'left')
         %Transfer Cr plot into insert
         subplot(2,2,3)
         [h_m h_i]=inset(hb,h2);
@@ -875,9 +870,9 @@ for ii=1:numscans
         set(gca,'XDir','reverse');
         set(gca,'YTick',[]);
         xlim([2.6 3.6]);
-        z=abs(freq(lb:ub)-3.12);
+        z=abs(freq(lbCr:ubCr)-3.12);
         crlow=find(min(z)==z);
-        z=abs(freq(lb:ub)-2.9);
+        z=abs(freq(lbCr:ubCr)-2.9);
         crhigh=find(min(z)==z);
         crlabelbounds=crlow:crhigh;
         hcres=text(3.12,max(residCr(crlabelbounds))+0.05*Crmax,'residual');

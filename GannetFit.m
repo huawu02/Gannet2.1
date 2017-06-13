@@ -63,7 +63,7 @@ for ii=1:numscans
         upperbound=find(min(z)==z);
         freqbounds=lowerbound:upperbound;
         plotbounds=(lowerbound-150):(upperbound+150);
-        maxinGABA=abs(max(real(GABAData(MRS_struct.ii,freqbounds)))-min(real(GABAData(MRS_struct.ii,freqbounds))));
+        maxinGABA=abs(max(real(GABAData(ii,freqbounds)))-min(real(GABAData(ii,freqbounds))));
         
         % smarter estimation of baseline params, Krish's idea (taken from Johns
         % code; NAP 121211
@@ -122,7 +122,7 @@ for ii=1:numscans
         %MRS_struct.out.GABAsnr(ii) = GABAheight / std(residg);
                 
         % Calculate SNR of GABA signal (MM: 170502)
-        [MRS_struct, noiseSigma_DIFF] = CalcNoise(MRS_struct, 'DIFF');
+        [MRS_struct, noiseSigma_DIFF] = CalcNoise(MRS_struct, ii, 'DIFF');
         MRS_struct.out.GABASNR(ii) = abs(GABAheight) / noiseSigma_DIFF;
                 
     elseif strcmp(MRS_struct.p.target,'GSH')
@@ -231,7 +231,7 @@ for ii=1:numscans
         upperbound=find(min(z)==z);
         freqbounds=lowerbound:upperbound;
         plotbounds=(lowerbound-150):(upperbound+150);
-        maxinGABA=max(real(GABAData(MRS_struct.ii,freqbounds)));
+        maxinGABA=max(real(GABAData(ii,freqbounds)));
         % smarter estimation of baseline params, Krish's idea (taken from Johns
         % code; NAP 121211
         grad_points = (real(GABAData(ii,upperbound)) - real(GABAData(ii,lowerbound))) ./ ...
@@ -300,7 +300,7 @@ for ii=1:numscans
         upperbound=find(min(z)==z);
         freqbounds=lowerbound:upperbound;
         plotbounds=(lowerbound-150):(upperbound+150);
-        maxinGABA=max(real(GABAData(MRS_struct.ii,freqbounds)));
+        maxinGABA=max(real(GABAData(ii,freqbounds)));
         % smarter estimation of baseline params, Krish's idea (taken from Johns
         % code; NAP 121211
         grad_points = (real(GABAData(ii,upperbound)) - real(GABAData(ii,lowerbound))) ./ ...
@@ -385,7 +385,7 @@ for ii=1:numscans
         %MRS_struct.out.GABAsnr(ii) = GABAheight / std(residg);
         
         % Calculate SNR of GABA and Glx signals (MM: 170502)
-        [MRS_struct, noiseSigma_DIFF] = CalcNoise(MRS_struct, 'DIFF');
+        [MRS_struct, noiseSigma_DIFF] = CalcNoise(MRS_struct, ii, 'DIFF');
         MRS_struct.out.GABASNR(ii) = abs(GABAheight) / noiseSigma_DIFF;
         MRS_struct.out.GlxSNR(ii) = abs(Glxheight) / noiseSigma_DIFF;
         
@@ -595,7 +595,7 @@ for ii=1:numscans
         MRS_struct.out.WaterFitError(ii) = 100 * std(residw) / waterheight; %raee changed to residw
         
         % Calculate SNR of water signal (MM: 170502)        
-        [MRS_struct, noiseSigma_Water] = CalcNoise(MRS_struct, 'Water');
+        [MRS_struct, noiseSigma_Water] = CalcNoise(MRS_struct, ii, 'Water');
         MRS_struct.out.WaterSNR(ii) = abs(waterheight) / noiseSigma_Water;
                 
         % MM (170113)
@@ -767,7 +767,7 @@ for ii=1:numscans
     end
     
     % Calculate SNR of Cr signal (MM: 170502)
-    [MRS_struct, noiseSigma_OFF] = CalcNoise(MRS_struct, 'OFF');
+    [MRS_struct, noiseSigma_OFF] = CalcNoise(MRS_struct, ii, 'OFF');
     MRS_struct.out.CrSNR(ii) = abs(Crheight) / noiseSigma_OFF;
     
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -906,9 +906,9 @@ for ii=1:numscans
         p = get(h,'pos'); % get position of axes
         set(h,'pos',[0.52 0.52 0.42 0.42]) % move the axes slightly
         
-        input=MRS_struct.mask.img(MRS_struct.ii,:,1:round(size(MRS_struct.mask.img,3)/3));
+        input=MRS_struct.mask.img(ii,:,1:round(size(MRS_struct.mask.img,3)/3));
         
-        imagesc(squeeze(MRS_struct.mask.img(MRS_struct.ii,:,1:round(size(MRS_struct.mask.img,3)/3))));
+        imagesc(squeeze(MRS_struct.mask.img(ii,:,1:round(size(MRS_struct.mask.img,3)/3))));
         colormap('gray');
         caxis([0 1])
         axis equal;

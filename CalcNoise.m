@@ -1,7 +1,6 @@
-function [MRS_struct, noise] = CalcNoise(MRS_struct, subspec)
+function [MRS_struct, noise] = CalcNoise(MRS_struct, ii, subspec)
 % Estimate noise in downfield frequency-domain signal
 
-ii = MRS_struct.ii;
 freq = MRS_struct.spec.freq;
 if strcmp(subspec,'DIFF')
     spec = MRS_struct.spec.diff;

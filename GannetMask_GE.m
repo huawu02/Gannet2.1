@@ -36,32 +36,38 @@ end
 
 [pathspar,namespar,ext] = fileparts(Pname);
 
-fidoutmask = fullfile(dcm_dir,[namespar '_mask.nii'])
+fidoutmask = fullfile(dcm_dir,[namespar '_mask.nii']);
 
-[Pname '.hdr' ]
-ptr=fopen([Pname '.hdr' ]);
-MRSHead=fscanf(ptr,'%c');
+% [Pname '.hdr' ]
+% ptr=fopen([Pname '.hdr' ]);
+% MRSHead=fscanf(ptr,'%c');
+% fclose(ptr);
+% [m n]=size(MRSHead); 
+% 
+% k = findstr(' user11:', MRSHead);
+% b=str2num(MRSHead(k+11:k+18));
+% k = findstr(' user12:', MRSHead);
+% c=str2num(MRSHead(k+11:k+18));
+% k = findstr(' user13:', MRSHead);
+% a=str2num(MRSHead(k+11:k+18));
+% MRS_struct.p.voxoff(ii,:)=[ -b -c a];
+% 
+% k = findstr(' user8:', MRSHead);
+% d=str2num(MRSHead(k+10:k+17));
+% k = findstr(' user9:', MRSHead);
+% e=str2num(MRSHead(k+10:k+17));
+% %e = 0.5*e; %e is the anterior posterior direction
+% k = findstr(' user10:', MRSHead);
+% f=str2num(MRSHead(k+11:k+18));
+% MRS_struct.p.voxsize(ii,:) = [d e f ]; % works for ob-axial rotator 
 
-[m n]=size(MRSHead); 
-fclose(ptr);
+fid = fopen(Pname,'r', 'ieee-le');
+status = fseek(fid, 147340, 'bof');
+MRSHead = read_image_header( fid, 24 );
+fclose(fid);
 
-k = findstr(' user11:', MRSHead);
-b=str2num(MRSHead(k+11:k+18));
-k = findstr(' user12:', MRSHead);
-c=str2num(MRSHead(k+11:k+18));
-k = findstr(' user13:', MRSHead);
-a=str2num(MRSHead(k+11:k+18));
-MRS_struct.p.voxoff(ii,:)=[ -b -c a];
-
-k = findstr(' user8:', MRSHead);
-d=str2num(MRSHead(k+10:k+17));
-k = findstr(' user9:', MRSHead);
-e=str2num(MRSHead(k+10:k+17));
-%e = 0.5*e; %e is the anterior posterior direction
-k = findstr(' user10:', MRSHead);
-f=str2num(MRSHead(k+11:k+18));
-MRS_struct.p.voxsize(ii,:) = [d e f ]; % works for ob-axial rotator 
-
+MRS_struct.p.voxoff(ii,:) = [ -MRSHead.user11 -MRSHead.user12 MRSHead.user13 ];
+MRS_struct.p.voxsize(ii,:) = [ MRSHead.user8   MRSHead.user9  MRSHead.user10 ]; 
 % MRS_struct.p.voxang is not contained in P-file header (really!)
 % The rotation is adopted from the image on which the voxel was placed
 % i.e. either the 3D T1 or a custom rotated localizer. 

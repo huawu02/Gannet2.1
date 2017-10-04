@@ -5,7 +5,8 @@ MRS_struct.p.global_rescale=1;
 %formats and tidy things up some.
 %RTN edits to accommodate Noeske version RAEE 141007
 %160916: MM & RTN edits to accommodate different encoding schemes
-fid = fopen(fname,'r', 'ieee-be');
+% HW: should use ieee-le to read pfile
+fid = fopen(fname,'r', 'ieee-le'); 
 if fid == -1
     tmp = [ 'Unable to locate Pfile ' fname ];
     disp(tmp);
@@ -32,78 +33,118 @@ else
         pfile_header_size= 61464;
     elseif (f_hdr_value == 11.0)  % 12.0 product release
         pfile_header_size= 66072;
-    elseif (f_hdr_value > 11.0) && (f_hdr_value < 100.0)  % 14.0 and later
+    elseif (f_hdr_value > 11.0) && (f_hdr_value < 26.0)  % 14.0 and later, before 26.0
         fseek(fid, 1468, 'bof');
         pfile_header_size = fread(fid,1,'integer*4');
+    elseif (f_hdr_value >= 26.0)    % HW: 26.0 and later
+        pfile_header_size = 213684;
     else
         sprintf('Invalid Pfile header revision: %f', f_hdr_value );
         return;
     end
 end
 
-MRS_struct.p.GE.rdbm_rev_num = f_hdr_value(1); % MM (170118)
-chkRev = [16, 24]; % GERead mods tested with these revisions only
-if ~any(MRS_struct.p.GE.rdbm_rev_num == chkRev)
+MRS_struct.p.GE.rdbm_rev_num = floor(f_hdr_value(1)*1000)/1000; % MM (170118)
+chkRev = [16, 24, 26]; % GERead mods tested with these revisions only. HW: add rev 26 support
+if ~any(floor(MRS_struct.p.GE.rdbm_rev_num) == chkRev)
     warning('!!! GERead not fully functional with header revision number %d !!!', MRS_struct.p.GE.rdbm_rev_num);
 end
-% Read header information
-fseek(fid, 0, 'bof');
-hdr_value = fread(fid, 102, 'integer*2');
-% RTN - read rhuser
-fseek(fid, 0, 'bof');
-f_hdr_value = fread(fid, 74, 'real*4');
- % RTN (170118): Find center frequency
-fseek(fid, 0, 'bof');
-i_hdr_value = fread(fid, 102+9, 'integer*4');
-MRS_struct.p.LarmorFreq = i_hdr_value(102+5)/1e7;
-MRS_struct.p.sw = f_hdr_value(55); % MM (160916)
 
-npasses = hdr_value(33);
-nslices = hdr_value(35);
-nechoes = hdr_value(36);
+if MRS_struct.p.GE.rdbm_rev_num == 26.002     % HW: add rev 26 support
+    fseek(fid, 140, 'bof');     npasses                                 = fread(fid, 1, 'int16');
+    fseek(fid, 144, 'bof');     nslices                                 = fread(fid, 1, 'int16');
+    fseek(fid, 146, 'bof');     nechoes                                 = fread(fid, 1, 'int16');
+    fseek(fid, 148, 'bof');     nex                                     = fread(fid, 1, 'int16');           % rdb_hdr.navs
+    fseek(fid, 150, 'bof');     nframes                                 = fread(fid, 1, 'int16');
+    fseek(fid, 158, 'bof');     point_size                              = fread(fid, 1, 'int16');
+    fseek(fid, 178, 'bof');     MRS_struct.p.npoints                    = fread(fid, 1, 'int16');           % rdb_hdr.da_xres
+    fseek(fid, 180, 'bof');     MRS_struct.p.nrows                      = fread(fid, 1, 'int16');           % rdb_hdr.da_yres
+    fseek(fid, 264, 'bof');     start_recv                              = fread(fid, 1, 'int16');           % rdb_hdr.dab[0]
+    fseek(fid, 266, 'bof');     stop_recv                               = fread(fid, 1, 'int16');           % rdb_hdr.dab[1]
+    fseek(fid, 280, 'bof');     MRS_struct.p.sw                         = fread(fid, 1, 'float32');         % rdb_hdr.user0
+    if nechoes ~= 1
+        fseek(fid, 296, 'bof');     dataframes                          = fread(fid, 1, 'float32') / nex;   % rdb_hdr.user4
+        fseek(fid, 356, 'bof');     refframes                           = fread(fid, 1, 'float32');         % rdb_hdr.user19
+    end
+    fseek(fid, 488, 'bof');     MRS_struct.p.LarmorFreq                 = fread(fid, 1, 'uint32') / 1e7;    % rdb_hdr.ps_mps_freq
+    fseek(fid, 199244, 'bof');  MRS_struct.p.TE(ii)                     = fread(fid, 1, 'int32') / 1e3;     % image_hdr.te
+    fseek(fid, 199236, 'bof');  MRS_struct.p.TR(ii)                     = fread(fid, 1, 'int32') / 1e3;
+    fseek(fid, 198568, 'bof');  MRS_struct.p.voxdim(ii,:)               = fread(fid, 3, 'float32')';        % image_hdr.user8 : image_hdr.user10
+    fseek(fid, 198612, 'bof');  MRS_struct.p.GE.editRF.waveform(ii)     = fread(fid, 1, 'float32');         % image_hdr.user19
+    fseek(fid, 198616, 'bof');  MRS_struct.p.GE.editRF.freq_Hz(ii,:)    = fread(fid, 2, 'float32')';        % image_hdr.user20 : 21
+    fseek(fid, 198624, 'bof');  MRS_struct.p.GE.editRF.dur(ii)          = fread(fid, 1, 'float32') / 1e3;   % image_hdr.user22
+    % get the exam/series number, for naming the output file
+    fseek(fid, 199552, 'bof');  MRS_struct.p.ex_no                      = fread(fid, 1, 'uint16');          % image_hdr.im_exno
+    fseek(fid, 199564, 'bof');  MRS_struct.p.se_no                      = fread(fid, 1, 'int16');           % image_hdr.im_seno
+
+else     % if any(MRS_struct.p.rdbm_rev_num == [16, 24])
+    % Read header information
+    fseek(fid, 0, 'bof');
+    hdr_value = fread(fid, 102, 'integer*2');
+    % RTN - read rhuser
+    fseek(fid, 0, 'bof');
+    f_hdr_value = fread(fid, 74, 'real*4');
+     % RTN (170118): Find center frequency
+    fseek(fid, 0, 'bof');
+    i_hdr_value = fread(fid, 102+9, 'integer*4');
+    MRS_struct.p.LarmorFreq = i_hdr_value(102+5)/1e7;
+    MRS_struct.p.sw = f_hdr_value(55); % MM (160916)
+
+    npasses = hdr_value(33);
+    nslices = hdr_value(35);
+    nechoes = hdr_value(36);
+    %RTN - number of phase cycles
+    nex = hdr_value(37);
+    nframes = hdr_value(38);
+    point_size = hdr_value(42);
+    MRS_struct.p.npoints = hdr_value(52);
+    MRS_struct.p.nrows = hdr_value(53);
+    % rc_xres = hdr_value(54);
+    % rc_yres = hdr_value(55);
+    start_recv = hdr_value(101);
+    stop_recv = hdr_value(102);
+    if nechoes ~= 1
+        dataframes = f_hdr_value(59)/nex;
+        refframes = f_hdr_value(74);
+    end
+    % MM (170118): Find TE/TR
+    fseek(fid, 1468, 'bof');
+    p_hdr_value = fread(fid, 12, 'integer*4'); % byte offsets to start of sub-header structures
+    fseek(fid, p_hdr_value(10), 'bof'); % set position to start of rdb_hdr_image
+    t_hdr_value = fread(fid, p_hdr_value(1)-p_hdr_value(10), 'integer*4');
+    if isequal(MRS_struct.p.GE.rdbm_rev_num, 16)    
+        MRS_struct.p.TE(ii) = t_hdr_value(193)/1e3;
+        MRS_struct.p.TR(ii) = t_hdr_value(191)/1e3;
+    elseif isequal(MRS_struct.p.GE.rdbm_rev_num, 24)
+        MRS_struct.p.TE(ii) = t_hdr_value(267)/1e3;
+        MRS_struct.p.TR(ii) = t_hdr_value(265)/1e3;
+    end
+
+    % MM (170127): Find voxel dimensions and edit pulse parameters
+    fseek(fid, p_hdr_value(8), 'bof'); % set position to start of rdb_hdr_exam. HW: actually these fields are in rdb_hdr_image.user*
+    o_hdr_value = fread(fid, p_hdr_value(9)-p_hdr_value(8), 'real*4');
+    if isequal(MRS_struct.p.GE.rdbm_rev_num, 16)
+        MRS_struct.p.voxdim(ii,:) = o_hdr_value(822:824)';
+        MRS_struct.p.GE.editRF.waveform(ii) = o_hdr_value(833);
+        MRS_struct.p.GE.editRF.freq_Hz(ii,:) = o_hdr_value(834:835)';
+        MRS_struct.p.GE.editRF.dur(ii) = o_hdr_value(836)/1e3;
+    elseif isequal(MRS_struct.p.GE.rdbm_rev_num, 24)
+        MRS_struct.p.voxdim(ii,:) = o_hdr_value(1228:1230)';
+        MRS_struct.p.GE.editRF.waveform(ii) = o_hdr_value(1239);
+        MRS_struct.p.GE.editRF.freq_Hz(ii,:) = o_hdr_value(1240:1241)';
+        MRS_struct.p.GE.editRF.dur(ii) = o_hdr_value(1242)/1e3;
+    end
+    
+    % get the exam/series number, for naming the output file
+    fseek(fid, 148712, 'bof');  MRS_struct.p.ex_no                   = fread(fid, 1, 'uint16');          % image_hdr.im_exno
+    fseek(fid, 148724, 'bof');  MRS_struct.p.se_no                   = fread(fid, 1, 'int16');           % image_hdr.im_seno
+
+end
+
 MRS_struct.p.GE.nechoes = nechoes;
-%RTN - number of phase cycles
-nex = hdr_value(37);
 MRS_struct.p.GE.NEX = nex;
-nframes = hdr_value(38);
-point_size = hdr_value(42);
-MRS_struct.p.npoints = hdr_value(52);
-MRS_struct.p.nrows = hdr_value(53);
-% rc_xres = hdr_value(54);
-% rc_yres = hdr_value(55);
-start_recv = hdr_value(101);
-stop_recv = hdr_value(102);
 nreceivers = (stop_recv - start_recv) + 1;
-
-% MM (170118): Find TE/TR
-fseek(fid, 1468, 'bof');
-p_hdr_value = fread(fid, 12, 'integer*4'); % byte offsets to start of sub-header structures
-fseek(fid, p_hdr_value(10), 'bof'); % set position to start of rdb_hdr_image
-t_hdr_value = fread(fid, p_hdr_value(1)-p_hdr_value(10), 'integer*4');
-if isequal(MRS_struct.p.GE.rdbm_rev_num, 16)    
-    MRS_struct.p.TE(ii) = t_hdr_value(193)/1e3;
-    MRS_struct.p.TR(ii) = t_hdr_value(191)/1e3;
-elseif isequal(MRS_struct.p.GE.rdbm_rev_num, 24)
-    MRS_struct.p.TE(ii) = t_hdr_value(267)/1e3;
-    MRS_struct.p.TR(ii) = t_hdr_value(265)/1e3;
-end
-
-% MM (170127): Find voxel dimensions and edit pulse parameters
-fseek(fid, p_hdr_value(8), 'bof'); % set position to start of rdb_hdr_exam
-o_hdr_value = fread(fid, p_hdr_value(9)-p_hdr_value(8), 'real*4');
-if isequal(MRS_struct.p.GE.rdbm_rev_num, 16)
-    MRS_struct.p.voxdim(ii,:) = o_hdr_value(822:824)';
-    MRS_struct.p.GE.editRF.waveform(ii) = o_hdr_value(833);
-    MRS_struct.p.GE.editRF.freq_Hz(ii,:) = o_hdr_value(834:835)';
-    MRS_struct.p.GE.editRF.freq_ppm(ii,:) = (MRS_struct.p.GE.editRF.freq_Hz(ii,:) / MRS_struct.p.LarmorFreq) + 4.68;
-    MRS_struct.p.GE.editRF.dur(ii) = o_hdr_value(836)/1e3;
-elseif isequal(MRS_struct.p.GE.rdbm_rev_num, 24)
-    MRS_struct.p.voxdim(ii,:) = o_hdr_value(1228:1230)';
-    MRS_struct.p.GE.editRF.waveform(ii) = o_hdr_value(1239);
-    MRS_struct.p.GE.editRF.freq_Hz(ii,:) = o_hdr_value(1240:1241)';
-    MRS_struct.p.GE.editRF.freq_ppm(ii,:) = (MRS_struct.p.GE.editRF.freq_Hz(ii,:) / MRS_struct.p.LarmorFreq) + 4.68;
-    MRS_struct.p.GE.editRF.dur(ii) = o_hdr_value(1242)/1e3;
-end
+MRS_struct.p.GE.editRF.freq_ppm(ii,:) = (MRS_struct.p.GE.editRF.freq_Hz(ii,:) / MRS_struct.p.LarmorFreq) + 4.68;
 
 % Spectro prescan pfiles
 if (MRS_struct.p.npoints == 1) && (MRS_struct.p.nrows == 1)
@@ -164,9 +205,6 @@ if (nechoes == 1)
     
     Frames_for_Water = 8;
 else
-    dataframes = f_hdr_value(59)/nex;
-    refframes = f_hdr_value(74);
-    
     MRS_struct.p.Navg(ii) = dataframes*nex*2; % RTN 2016
     
     if ((dataframes+refframes) ~= nframes)

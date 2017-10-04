@@ -225,12 +225,7 @@ set(gcf, 'PaperUnits', 'inches');
     if(strcmpi(MRS_struct.p.vendor,'Philips_data'))
         pdfname=[ epsdirname '/' fullpath '.pdf' ];
     else
-        pdfname=[ epsdirname '/' pfil_nopath  '.pdf' ];
-    end
-    %epsdirname
-    if(exist(epsdirname,'dir') ~= 7)
-        %epsdirname
-        mkdir(epsdirname)
+        pdfname=[ 'e' num2str(MRS_struct.p.ex_no) '_s' num2str(MRS_struct.p.se_no) '_CoRegister.pdf' ];
     end
     saveas(gcf, pdfname);
         

@@ -55,9 +55,11 @@ while(SpecRegLoop>(-1))
     reverseStr = ''; % MM (170227)
     for corrloop=1:size(flatdata,3)
         % MM (170227)
-        msg = sprintf('\nSpectral Registration - Fitting transient: %d', corrloop);
-        fprintf([reverseStr, msg]);
-        reverseStr = repmat(sprintf('\b'), 1, length(msg));
+        if ~isdeployed
+            msg = sprintf('\nSpectral Registration - Fitting transient: %d\n', corrloop);
+            fprintf([reverseStr, msg]);
+            reverseStr = repmat(sprintf('\b'), 1, length(msg));
+        end
         
         transient=squeeze(flatdata(:,:,corrloop));
         input.data=transient(:);

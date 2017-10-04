@@ -79,9 +79,9 @@ end
 %%%%%%%%%%%%%%%%%%%%%%%%
 
 % create dir for output
-if(exist('./MRSload_output','dir') ~= 7)
-    mkdir MRSload_output
-end
+% if(exist('./MRSload_output','dir') ~= 7)
+%     mkdir MRSload_output
+% end
 
 %%%%%%%%%%%%%%%%%%%%%%%%%%%
 %   4. Load Data from files
@@ -525,6 +525,7 @@ for ii=1:numpfiles    %Loop over all files in the batch (from gabafile)
         set(hb,'FontName','Helvetica');
         set(hc,'FontName','Helvetica');
     end
+    set(gcf, 'Visible', 'off');   % don't pop up the figure
     set(gcf, 'PaperUnits', 'inches');
     set(gcf,'PaperSize',[11 8.5]);
     set(gcf,'PaperPosition',[0 0 11 8.5]);
@@ -532,7 +533,7 @@ for ii=1:numpfiles    %Loop over all files in the batch (from gabafile)
     if(strcmpi(MRS_struct.p.vendor,'Philips_data'))
         pdfname=[ 'MRSload_output/' fullpath '_load.pdf' ];
     else
-        pdfname=[ 'MRSload_output/' pfil_nopath  '_load.pdf' ];
+        pdfname=[ 'e' num2str(MRS_struct.p.ex_no) '_s' num2str(MRS_struct.p.se_no) '_MRSload.pdf' ];
     end
     saveas(h, pdfname);
     

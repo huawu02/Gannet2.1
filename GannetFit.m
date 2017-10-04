@@ -82,7 +82,7 @@ for ii=1:numscans
         options = optimset('lsqcurvefit');
         options = optimset(options,'Display','off','TolFun',1e-10,'Tolx',1e-10,'MaxIter',1e5);
         nlinopts = statset('nlinfit');
-        nlinopts = statset(nlinopts, 'MaxIter', 1e5);
+        nlinopts = statset(nlinopts, 'MaxIter', 1e5, 'Display','off');
         
         %Fitting to a Gaussian model happens here
         [GaussModelParam(ii,:),resnorm,residg] = lsqcurvefit(@(xdummy,ydummy) GaussModel_area(xdummy,ydummy), ...
@@ -147,7 +147,7 @@ for ii=1:numscans
         options = optimset('lsqcurvefit');
         options = optimset(options,'Display','off','TolFun',1e-10,'Tolx',1e-10,'MaxIter',1e5);
         nlinopts = statset('nlinfit');
-        nlinopts = statset(nlinopts, 'MaxIter', 1e5);
+        nlinopts = statset(nlinopts, 'MaxIter', 1e5, 'Display','off');
         
         [FiveGaussModelParam(ii,:),resnorm,residg] = lsqcurvefit(@(xdummy,ydummy) FiveGaussModel(xdummy,ydummy), ...
             initx, MRS_struct.spec.freq(freqbounds),real(MRS_struct.spec.diff(ii,freqbounds)), ...
@@ -187,7 +187,7 @@ for ii=1:numscans
         options = optimset('lsqcurvefit');
         options = optimset(options,'Display','off','TolFun',1e-10,'Tolx',1e-10,'MaxIter',1e5);
         nlinopts = statset('nlinfit');
-        nlinopts = statset(nlinopts, 'MaxIter', 1e5);
+        nlinopts = statset(nlinopts, 'MaxIter', 1e5, 'Display','off');
         
         %Plot the starting fit model
         %figure(99)
@@ -254,7 +254,7 @@ for ii=1:numscans
         options = optimset('lsqcurvefit');
         options = optimset(options,'Display','off','TolFun',1e-10,'Tolx',1e-10,'MaxIter',1e5);
         nlinopts = statset('nlinfit');
-        nlinopts = statset(nlinopts, 'MaxIter', 1e5);
+        nlinopts = statset(nlinopts, 'MaxIter', 1e5, 'Display','off');
         
         [GaussModelParam(ii,:),resnorm,residg] = lsqcurvefit(@(xdummy,ydummy) DoubleGaussModel_area(xdummy,ydummy), ...
             GaussModelInit, freq(freqbounds),real(GABAData(ii,freqbounds)), ...
@@ -323,7 +323,7 @@ for ii=1:numscans
         options = optimset('lsqcurvefit');
         options = optimset(options,'Display','off','TolFun',1e-10,'Tolx',1e-10,'MaxIter',1e5);
         nlinopts = statset('nlinfit');
-        nlinopts = statset(nlinopts, 'MaxIter', 1e5);
+        nlinopts = statset(nlinopts, 'MaxIter', 1e5, 'Display','off');
         
         %figure(98)
         %plot(freq(freqbounds),GABAGlxModel_area(GaussModelInit,freq(freqbounds)),freq(freqbounds),real(GABAData(ii,freqbounds)))
@@ -963,8 +963,9 @@ for ii=1:numscans
         tmp = [tmp '%'];
         tmp = ['FitErr (H/Cr)   : ' tmp];
         if strcmp (MRS_struct.p.target, 'Glx')
-            text(0,0.4, tmp, 'FontName', 'Helvetica');
-            tmp = [MRS_struct.p.target sprintf( '/H_2O  : %.3f inst. units.', MRS_struct.out.GABAconciu(ii) )];
+            % CNI: no such field MRS_struct.out.GABAconciu when fitting Glx
+            %text(0,0.4, tmp, 'FontName', 'Helvetica');
+            %tmp = [MRS_struct.p.target sprintf( '/H_2O  : %.3f inst. %units.', MRS_struct.out.GABAconciu(ii) )]; 
             text(0,0.3, tmp, 'FontName', 'Helvetica');
             tmp = [ MRS_struct.p.target sprintf('/Cr i.r.: %.3f', MRS_struct.out.GABAconcCr(ii) )];
         elseif strcmp (MRS_struct.p.target, 'GABA')
@@ -1079,6 +1080,7 @@ for ii=1:numscans
         set(hb,'FontName','Helvetica')
     end
     %Save pdf output
+    set(gcf, 'Visible', 'off');   % don't pop up the figure
     set(gcf, 'PaperUnits', 'inches');
     set(gcf,'PaperSize',[11 8.5]);
     set(gcf,'PaperPosition',[0 0 11 8.5]);
@@ -1086,12 +1088,9 @@ for ii=1:numscans
     if(strcmpi(MRS_struct.p.vendor,'Philips_data'))
         pdfname=[ epsdirname '/' fullpath '_fit.pdf' ];
     else
-        pdfname=[ epsdirname '/' pfil_nopath  '_fit.pdf' ];
+        pdfname=['e' num2str(MRS_struct.p.ex_no) '_s' num2str(MRS_struct.p.se_no) '_MRSfit_' MRS_struct.p.target '.pdf'];
     end
-    %epsdirname
-    if(exist(epsdirname,'dir') ~= 7)
-        mkdir(epsdirname)
-    end
+    
     saveas(gcf, pdfname);
     if(ii==numscans)
         if((MRS_struct.p.mat) == 1)

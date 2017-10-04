@@ -10,7 +10,7 @@ function MRS_struct=GannetPreInitialise(MRS_struct)
     MRS_struct.p.LarmorFreq = []; % parsed from header
     MRS_struct.p.Nwateravg = []; % parsed from header
     MRS_struct.p.target = 'GABAGlx'; % options are 'GABAGlx' (recommended), 'GABA', 'Glx' and 'GSH'
-    MRS_struct.p.ONOFForder = 'offfirst'; % options are 'onfirst' or 'offfirst'
+    MRS_struct.p.ONOFForder = 'onfirst'; % options are 'onfirst' or 'offfirst'
     MRS_struct.p.Water_Positive = 1; % for Philips MOIST ws, set to 0
     % Siemens header information differs between versions; switch for different versions
     MRS_struct.p.Siemens_type = 1; % 1 = TIM TRIO WIP; 2 = Near seq; 3 = Skyra WIP; 4 = Prisma (VD13C); 5 = Prisma (Minnesota); 6 = Jamie's VE11B (Jena)

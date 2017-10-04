@@ -122,15 +122,19 @@ axis off;
  
 
 h=subplot(2, 2, 3);    % replot of GABA fit spec
-    z=abs(MRS_struct.spec.freq-3.55);
-    lowerbound=find(min(z)==z);
-    z=abs(MRS_struct.spec.freq-2.79);
-    upperbound=find(min(z)==z);
-    freqbounds=lowerbound:upperbound;
-    freq=MRS_struct.spec.freq(1,freqbounds);
-    plot( ...
-        real(MRS_struct.spec.freq(1,:)),real(MRS_struct.spec.diff(ii,:)), ...
+z=abs(MRS_struct.spec.freq-3.55);
+lowerbound=find(min(z)==z);
+z=abs(MRS_struct.spec.freq-2.79);
+upperbound=find(min(z)==z);
+freqbounds=lowerbound:upperbound;
+freq=MRS_struct.spec.freq(1,freqbounds);
+if strcmp(MRS_struct.p.target, 'GABA') || strcmp(MRS_struct.p.target, 'Glx')
+    plot(real(MRS_struct.spec.freq(1,:)),real(MRS_struct.spec.diff(ii,:)), ...
         'k',freq,GaussModel_area(MRS_struct.out.GABAModelFit(ii,:),freq),'r');  % this part may be broken
+elseif strcmp(MRS_struct.p.target, 'GABAGlx') 
+    plot(real(MRS_struct.spec.freq(1,:)),real(MRS_struct.spec.diff(ii,:)), ...
+        'k',freq,GaussModel_area(MRS_struct.out.GABAGlxModelFit(ii,:),freq),'r');  % this part may be broken
+end
         
 zz=abs(MRS_struct.spec.freq-3.6);
 Glx_right=find(min(zz)==zz);
@@ -186,7 +190,7 @@ tmp = ['Spectra:  ' y];
 tmp = regexprep(tmp, '_','-');
 text(0,0.39, tmp, 'HorizontalAlignment', 'left', ...
             'VerticalAlignment', 'top',...
-            'FontName', 'Helvetica','FontSize',13);
+            'FontName', 'Helvetica','FontSize',8);
         
 D = MRS_struct.mask.T1image{ii} ;
 if size(D,2) >30
@@ -198,7 +202,7 @@ tmp = ['Anatomical image:  ' MRS_struct.mask.T1image(ii,:)];
 tmp = regexprep(tmp, '_','-');
 text(0,0.27, tmp, 'HorizontalAlignment', 'left', ...
             'VerticalAlignment', 'top',...
-            'FontName', 'Helvetica','FontSize',13);
+            'FontName', 'Helvetica','FontSize',8);
         
         
         
@@ -263,13 +267,9 @@ set(gcf, 'PaperUnits', 'inches');
     if(strcmpi(MRS_struct.p.vendor,'Philips_data'))
         pdfname=[ epsdirname '/' fullpath '.pdf' ];
     else
-        pdfname=[ epsdirname '/' pfil_nopath  '.pdf' ];
+        pdfname=[ 'e' num2str(MRS_struct.p.ex_no) '_s' num2str(MRS_struct.p.se_no) '_Segment.pdf' ];
     end
-    %epsdirname
-    if(exist(epsdirname,'dir') ~= 7)
-        %epsdirname
-        mkdir(epsdirname)
-    end
+   
     saveas(gcf, pdfname);
 %     
 % if(ii==MRS_struct.ii)
